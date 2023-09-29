@@ -1,6 +1,7 @@
 
 #HackTheBox Antique Walkthrough
 
+![](images/image-9.png)
 
 Here's a result of the NMAP Scan.
 
@@ -60,7 +61,7 @@ We have TCP port 23 open and UDP port 161 open.
 
 telnet 10.10.11.107
 
-[![](images/image-2.png)]
+![](images/image-2.png)
 
 We need a password, the password might be sent over in clear text.
 
