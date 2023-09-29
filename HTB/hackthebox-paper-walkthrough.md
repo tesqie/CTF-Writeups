@@ -1,9 +1,4 @@
----
-title: "HackTheBox Paper Walkthrough"
-date: "2022-05-26"
-categories: 
-  - "htb-walkthroughs"
----
+# HackTheBox Paper Walkthrough
 
 ### NMAP Scan to start off
 
@@ -42,7 +37,7 @@ No exact OS matches for host (If you know what OS is running on it, see https://
 
 We have port 80 open. We'll start off by navigating to http://10.10.11.143
 
-[![](images/1-1024x637.png)](http://localhost/wordpress/wp-content/uploads/2022/05/1.png)
+![](images/1-1024x637.png)
 
 Nothing is interesting on the homepage.
 
@@ -50,13 +45,13 @@ Let's try running a directory search using Feroxbuster.
 
 feroxbuster -u http://10.10.11.143 -x html json php txt
 
-[![](images/2-1024x753.png)](http://localhost/wordpress/wp-content/uploads/2022/05/2.png)
+![](images/2-1024x753.png)
 
 There's a manual subdirectory, but nothing interesting was found.
 
 Let's try intercepting the GET request using BurpSuite.
 
-[![](images/3-1024x721.png)](http://localhost/wordpress/wp-content/uploads/2022/05/3.png)
+![](images/3-1024x721.png)
 
 There is information disclosure in the response.
 
@@ -66,15 +61,15 @@ We'll add the URL to our /etc/hosts and check out the link.
 
 nano /etc/hosts
 
-[![](images/4.png)](http://localhost/wordpress/wp-content/uploads/2022/05/4.png)
+![](images/4.png)
 
 It seems office.paper is some sort of blog.
 
-[![](images/5-1024x750.png)](http://localhost/wordpress/wp-content/uploads/2022/05/5.png)
+![](images/5-1024x750.png)
 
 We'll use the Wappalyzer extension to find out what technologies are running.
 
-[![](images/6.png)](http://localhost/wordpress/wp-content/uploads/2022/05/6.png)
+![](images/6.png)
 
 The site is running WordPress 5.2.3. A quick google search gets us: WordPress <= 5.2.3 - Unauthenticated View Private/Draft Posts exploit. 
 
@@ -84,7 +79,7 @@ The exploit is very simple. We just have to add ?static=1 to the URL.
 
 http://office.paper/?static=1
 
-[![](images/7-1024x839.png)](http://localhost/wordpress/wp-content/uploads/2022/05/7.png)
+![](images/7-1024x839.png)
 
 We got a piece of new information! 
 
@@ -92,31 +87,31 @@ Remember to add the new hostname chat.office.paper to your /etc/hosts/
 
 Visiting the URL [http://chat.office.paper/register/8qozr226AhkCHZdyY](https://www.blogger.com/blog/post/edit/1821202635744511804/8903568251577251071#) gets us to some sort of chat registration.
 
-[![](images/8-1024x889.png)](http://localhost/wordpress/wp-content/uploads/2022/05/8.png)
+![](images/8-1024x889.png)
 
 Create a new account and log in.
 
 We are in the #general chat. Scroll up to find the next piece of the puzzle.
 
-[![](images/9-1024x847.png)](http://localhost/wordpress/wp-content/uploads/2022/05/9.png)
+![](images/9-1024x847.png)
 
 DM recyclops with the command:
 
 recyclops file ../../../../../../../etc/passwd
 
-[![](images/10-1024x993.png)](http://localhost/wordpress/wp-content/uploads/2022/05/10.png)
+![](images/10-1024x993.png)
 
 Scrolling down we get the username dwight.
 
 By playing around with the command "list". We discover a file in "../hubot/env".
 
-[![](images/11.png)](http://localhost/wordpress/wp-content/uploads/2022/05/11.png)
+![](images/11.png)
 
 Now we can ssh with our new credentials.
 
 ssh dwight@10.10.11.143
 
-[![](images/12.png)](http://localhost/wordpress/wp-content/uploads/2022/05/12.png)
+![](images/12.png)
 
 There's our first user flag.
 
@@ -139,7 +134,7 @@ chmod +x linpeas.sh
 
 Scrolling through LinPEAS, we find a vulnerable CVE-2021-3560.
 
-[![](images/13-1024x652.png)](http://localhost/wordpress/wp-content/uploads/2022/05/13.png)
+![](images/13-1024x652.png)
 
 A quick Google search gets us a nice script on Github.
 
@@ -162,7 +157,7 @@ sudo bash
 
 and we're root!
 
-[![](images/14-1024x649.png)](http://localhost/wordpress/wp-content/uploads/2022/05/14.png)
+![](images/14-1024x649.png)
 
 cat /root/root.txt
 
