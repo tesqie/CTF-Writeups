@@ -1,11 +1,7 @@
----
-title: "HackTheBox Lame Walkthrough"
-date: "2022-06-12"
-categories: 
-  - "htb-walkthroughs"
-coverImage: "Untitled.png"
----
 
+# HackTheBox Lame Walkthrough
+
+![](images/Untitled.png)
 As usual, the first thing we run is an NMAP scan to see what ports are open on the target.
 
 nmap -A -p- 10.10.10.3 -T4
@@ -58,7 +54,7 @@ I noticed an older SMB version running (Samba 3.0.20-Debian). Maybe there is an 
 
 A quick google search and we have an exploit! [https://www.rapid7.com/db/modules/exploit/multi/samba/usermap\_script/](https://www.rapid7.com/db/modules/exploit/multi/samba/usermap_script/)
 
-[![](images/image.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image.png)
+![](images/image.png)
 
 We just need to run and configure Metasploit for the usermap\_script exploit.
 
