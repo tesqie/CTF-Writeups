@@ -1,13 +1,6 @@
----
-title: "HackTheBox Routerspace Walkthrough"
-date: "2022-06-17"
-categories: 
-  - "htb-walkthroughs"
-tags: 
-  - "anbox"
-  - "apk"
-coverImage: "RouterSpace.png"
----
+# HackTheBox Routerspace Walkthrough
+
+![](images/RouterSpace.png)
 
 This was a fun box to go through, I got to play with apks for the first time.
 
@@ -131,13 +124,13 @@ We've only got 2 ports open.
 
 I tried to ssh to see what I get.
 
-[![](images/image-21.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-21.png)
+![](images/image-21.png)
 
 As expected, can't login but now I know that I need to find a publickey. Passwords are disabled.
 
 Next lets visit the website.
 
-[![](images/image-22-950x1024.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-22.png)
+![](images/image-22-950x1024.png)
 
 Nothing interesting came back from crawling the webpage. The only thing we can do is download an .apk file.
 
@@ -147,15 +140,15 @@ I chose to install anbox via this tutorial. [https://chennylmf.medium.com/how-to
 
 Launch anbox and run routerspace.apk.
 
-[![](images/image-23.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-23.png)
+![](images/image-23.png)
 
 I used wireshark on interface anbox0 to see what the app is trying to do. I figured it was trying to connect to routerspace.htb. So I added the hostname to /etc/hosts.
 
-[![](images/image-24.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-24.png)
+![](images/image-24.png)
 
 Now that the router is connecting to the server. We can try to intercept the traffic using Burp.
 
-[![](images/image-25.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-25.png)
+![](images/image-25.png)
 
 First, we need to set a new proxy so burp can listen on.
 
@@ -163,17 +156,17 @@ adb shell settings put global http\_proxy 10.10.14.28:8001
 
 Now we can configure burp.
 
-[![](images/image-26-1024x318.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-26.png)
+![](images/image-26-1024x318.png)
 
-[![](images/image-27-1024x377.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-27.png)
+![](images/image-27-1024x377.png)
 
 Send to repeater so we can try to remotely execute code on the machine.
 
-[![](images/image-28-1024x807.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-28.png)
+![](images/image-28-1024x807.png)
 
 Whatever we type is just being returned. Adding \\n before the command and we have RCE!
 
-[![](images/image-29-1024x788.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-29.png)
+![](images/image-29-1024x788.png)
 
 We are unable to get a reverse shell going because iptables seems to be blocking all outgoing traffic. But we know we need to get a ssh key to login. /home/paul/.ssh/ seems to be empty. We'll have to generate a ssh key on our kali machine and to send over the public key. Then we can simply echo the rsa key into .ssh.
 
@@ -181,13 +174,13 @@ Kali Machine:
 
 ssh-keygen
 
-[![](images/image-30.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-30.png)
+![](images/image-30.png)
 
 Now copy the public rsa key from .ssh and pass the code in Burp repeater.
 
 \\necho '\[public rsa key\]' >> /home/paul/.ssh/authorized\_keys
 
-[![](images/image-31-1024x784.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-31.png)
+![](images/image-31-1024x784.png)
 
 Key has been successfully added.
 
@@ -195,7 +188,7 @@ Lets SSH in.
 
 ssh -i path\_to\_id\_rsa paul@10.10.11.148
 
-[![](images/image-32.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-32.png)
+![](images/image-32.png)
 
 We got in and found the user.txt flag. Lets use linpeas.sh to priv esc.
 
@@ -207,7 +200,7 @@ Now run linpeas.sh on victim machine.
 
 Next part is easy, we can see sudo is vulnerable.
 
-[![](images/image-33-1024x84.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-33.png)
+![](images/image-33-1024x84.png)
 
 A quick google gets us this [https://github.com/](https://github.com/mohinparamasivam/Sudo-1.8.31-Root-Exploit)[mohinparamasivam](https://github.com/mohinparamasivam/Sudo-1.8.31-Root-Exploit)[/Sudo-1.8.31-Root-Exploit](https://github.com/mohinparamasivam/Sudo-1.8.31-Root-Exploit)
 
@@ -218,6 +211,6 @@ scp the folder using -r. Now just make and run the exploit.
 make
 ./exploit
 
-[![](images/image-34.png)](http://localhost/wordpress/wp-content/uploads/2022/06/image-34.png)
+![](images/image-34.png)
 
 That was easy, we've escalated privilege to root!
